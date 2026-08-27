@@ -1,0 +1,2 @@
+import { StorefrontFooter, StorefrontHeader } from "@/components/Storefront";
+export default function AboutPage(){return <><StorefrontHeader/><main className="page container"><div className="auth" style={{maxWidth:760}}><p className="eyebrow">Sobre a Luana Sucesso</p><h1 style={{fontSize:52,marginTop:16}}>Materiais para aprender com leveza.</h1><p className="lead">A Luana Sucesso cria recursos digitais para levar mais brincadeira, descoberta e participação às aulas de inglês dos anos iniciais.</p></div></main><StorefrontFooter/></>;}

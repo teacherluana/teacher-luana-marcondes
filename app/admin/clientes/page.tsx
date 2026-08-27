@@ -1,0 +1,4 @@
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { formatDate } from "@/lib/utils";
+export const dynamic="force-dynamic";
+export default async function CustomersPage(){const {data}=await createAdminSupabaseClient().from('profiles').select('id,name,email,role,created_at').order('created_at',{ascending:false});return <><p className="eyebrow">Relacionamento</p><h1 style={{marginTop:14,fontSize:46}}>Clientes</h1><div className="table-wrap" style={{marginTop:24}}><table className="table"><thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Cadastro</th></tr></thead><tbody>{(data??[]).map(profile=><tr key={profile.id}><td>{profile.name||'—'}</td><td>{profile.email}</td><td><span className="pill">{profile.role}</span></td><td>{formatDate(profile.created_at)}</td></tr>)}</tbody></table></div></>;}

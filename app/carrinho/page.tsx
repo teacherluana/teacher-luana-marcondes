@@ -1,0 +1,7 @@
+"use client";
+import Link from "next/link";
+import { StorefrontFooter, StorefrontHeader } from "@/components/Storefront";
+import { useCart } from "@/components/CartProvider";
+import { formatCurrency } from "@/lib/utils";
+
+export default function CartPage() { const { items, remove, totalCents } = useCart(); return <><StorefrontHeader /><main className="page container"><h1 style={{ fontSize:"clamp(42px,6vw,66px)" }}>Seu carrinho</h1>{!items.length ? <div className="empty" style={{ marginTop:25 }}>Seu carrinho está pronto para receber atividades. <Link className="link" href="/produtos">Explorar materiais</Link></div> : <div className="split" style={{ marginTop:25 }}><section className="panel">{items.map((item)=><div key={item.id} className="cart-line"><div className="art-mini" /><div style={{ flex:1 }}><b>{item.title}</b><div style={{ color:"var(--muted)",fontSize:13 }}>{item.productKind === "kit" ? "Kit digital" : "Material digital"}</div><div className="price">{formatCurrency(item.effectivePriceCents)}</div></div><button className="button secondary" onClick={()=>remove(item.id)}>Remover</button></div>)}</section><aside className="summary"><h2>Resumo</h2><p>{items.length} {items.length === 1 ? "material" : "materiais"}</p><div className="row" style={{ justifyContent:"space-between",fontSize:20,fontWeight:900 }}><span>Total</span><span>{formatCurrency(totalCents)}</span></div><Link className="button yellow" style={{ width:"100%",marginTop:20 }} href="/checkout">Ir para o checkout →</Link></aside></div>}</main><StorefrontFooter /></>; }
