@@ -6,25 +6,49 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import { useEffect, useState } from "react";
 
 export function StorefrontHeader({
-  isAdmin = false,
+  isAdmin: forceAdmin = false,
 }: {
   isAdmin?: boolean;
 }) {
   const { items } = useCart();
+
   const [signedIn, setSignedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
 
-    void supabase.auth
-      .getUser()
-      .then(({ data }) => setSignedIn(Boolean(data.user)));
+    async function loadUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setSignedIn(false);
+        setIsAdmin(false);
+        return;
+      }
+
+      setSignedIn(true);
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      setIsAdmin(profile?.role === "admin");
+    }
+
+    void loadUser();
   }, []);
 
   const logout = async () => {
     await createBrowserSupabaseClient().auth.signOut();
     window.location.assign("/");
   };
+
+  const userIsAdmin = forceAdmin || isAdmin;
 
   return (
     <>
@@ -45,17 +69,25 @@ export function StorefrontHeader({
 
           <nav className="nav">
             <Link href="/produtos">Materiais</Link>
-            <Link href="/categorias/educacao-infantil">Categorias</Link>
+            <Link href="/categorias/educacao-infantil">
+              Categorias
+            </Link>
             <Link href="/sobre">Sobre</Link>
           </nav>
 
           <div className="header-actions">
             {signedIn ? (
               <>
-                <Link href={isAdmin ? "/admin" : "/minhas-compras"}>
+                <Link
+                  href={
+                    userIsAdmin
+                      ? "/admin"
+                      : "/minhas-compras"
+                  }
+                >
                   ⌁{" "}
                   <span>
-                    {isAdmin
+                    {userIsAdmin
                       ? "Painel administrativo"
                       : "Minha conta"}
                   </span>
@@ -81,53 +113,5 @@ export function StorefrontHeader({
         </div>
       </header>
     </>
-  );
-}
-
-export function StorefrontFooter() {
-  return (
-    <footer className="footer">
-      <div className="container footer-inner">
-        <div>
-          <h2>Teacher Luana Marcondes</h2>
-
-          <p>
-            Materiais digitais para deixar o inglês dos anos iniciais mais
-            leve, criativo e cheio de brincadeira.
-          </p>
-        </div>
-
-        <div>
-          <b>Navegue</b>
-
-          <p>
-            <Link href="/produtos">Materiais</Link>
-            <br />
-            <Link href="/minhas-compras">Minhas Compras</Link>
-            <br />
-            <Link href="/sobre">Sobre</Link>
-          </p>
-        </div>
-
-        <div>
-          <b>Ajuda</b>
-
-          <p>
-            <Link href="/contato">Fale com a Luana</Link>
-            <br />
-            <Link href="/termos">Termos de uso</Link>
-            <br />
-            <Link href="/privacidade">Privacidade</Link>
-          </p>
-        </div>
-      </div>
-
-      <div className="container">
-        <small>
-          © {new Date().getFullYear()} Teacher Luana Marcondes. Todos os
-          direitos reservados.
-        </small>
-      </div>
-    </footer>
   );
 }
