@@ -10,7 +10,7 @@ button { cursor:pointer; }
 .header { position:sticky; top:0; z-index:20; background:rgba(255,253,240,.95); border-bottom:1px solid var(--line); backdrop-filter:blur(12px); }
 .header-inner { height:78px; display:flex; gap:24px; align-items:center; justify-content:space-between; }
 .brand { display:flex; gap:10px; align-items:center; font-family:Georgia,serif; font-weight:800; font-size:20px; }
-.brand-mark { width:42px;height:42px;border-radius:14px;background:var(--deep);color:#fff;display:grid;place-items:center; }
+.brand-mark { width:46px;height:46px;border-radius:14px;background:var(--deep);color:#fff;display:grid;place-items:center;font-family: Georgia, serif;font-size: 16px;font-weight: 800;letter-spacing: -1px;line-height: 1;flex-shrink: 0; }
 .brand small { display:block;font-family:Arial,sans-serif;font-size:9px;letter-spacing:.18em;font-weight:800;color:var(--muted);margin-top:3px; }
 .nav { display:flex; gap:25px; font-size:14px; font-weight:700; }
 .nav a:hover { color:var(--deep); }
