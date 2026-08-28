@@ -115,3 +115,47 @@ export function StorefrontHeader({
     </>
   );
 }
+export function StorefrontFooter() {
+  return (
+    <footer className="footer">
+      <div className="container footer-inner">
+        <div>
+          <h2>Teacher Luana Marcondes</h2>
+          <p>
+            Materiais digitais para deixar o inglês dos anos iniciais mais
+            leve, criativo e cheio de brincadeira.
+          </p>
+        </div>
+
+        <div>
+          <b>Navegue</b>
+          <p>
+            <Link href="/produtos">Materiais</Link>
+            <br />
+            <Link href="/minhas-compras">Minhas Compras</Link>
+            <br />
+            <Link href="/sobre">Sobre</Link>
+          </p>
+        </div>
+
+        <div>
+          <b>Ajuda</b>
+          <p>
+            <Link href="/contato">Fale com a Luana</Link>
+            <br />
+            <Link href="/termos">Termos de uso</Link>
+            <br />
+            <Link href="/privacidade">Privacidade</Link>
+          </p>
+        </div>
+      </div>
+
+      <div className="container">
+        <small>
+          © {new Date().getFullYear()} Teacher Luana Marcondes. Todos os
+          direitos reservados.
+        </small>
+      </div>
+    </footer>
+  );
+}

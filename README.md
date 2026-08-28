@@ -1,4 +1,4 @@
-# Luana Sucesso — plataforma independente
+# Luana Marcondes — plataforma independente
 
 Vitrine de materiais digitais para ensino de inglês nos anos iniciais, construída com **Next.js App Router**, **Supabase**, **Mercado Pago** e **Resend**. O projeto é independente: pode ser aberto no VS Code, enviado a um repositório GitHub e publicado na Vercel sem serviços internos de terceiros.
 
