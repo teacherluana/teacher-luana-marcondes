@@ -250,9 +250,7 @@ export async function syncProductWithHotmart(
   revalidatePath(
     `/admin/produtos/${productId}`
   );
-
   revalidatePath("/admin/produtos");
-
   revalidatePath("/produtos");
 
   redirect(
@@ -289,9 +287,6 @@ export async function importHotmartProducts(
     );
   }
 
-  /*
-   * Consulta todos os produtos uma única vez.
-   */
   const productsResult =
     await getHotmartProducts();
 
@@ -310,10 +305,6 @@ export async function importHotmartProducts(
   let skipped = 0;
 
   for (const hotmartProduct of selectedProducts) {
-    /*
-     * Verifica se este produto Hotmart já está
-     * vinculado a algum produto do nosso catálogo.
-     */
     const { data: existing } = await db
       .from("products")
       .select("id,title")
@@ -328,10 +319,6 @@ export async function importHotmartProducts(
       continue;
     }
 
-    /*
-     * Busca as ofertas do produto e escolhe
-     * a oferta principal.
-     */
     const offersResult =
       await getHotmartProductOffers(
         hotmartProduct.ucode
@@ -352,10 +339,6 @@ export async function importHotmartProducts(
     const offerCode =
       offer.code?.trim() || null;
 
-    /*
-     * Sem código de oferta não conseguimos
-     * integrar o checkout.
-     */
     if (!offerCode) {
       skipped++;
       continue;
@@ -370,10 +353,6 @@ export async function importHotmartProducts(
       price * 100
     );
 
-    /*
-     * Aproveita a descrição da oferta quando
-     * a Hotmart realmente fornecer uma.
-     */
     const hotmartDescription =
       offer.description?.trim() || "";
 
@@ -386,10 +365,6 @@ export async function importHotmartProducts(
         ? hotmartDescription.slice(0, 160)
         : "Material digital importado da Hotmart.";
 
-    /*
-     * Gera um slug inicial a partir do nome
-     * da Hotmart.
-     */
     const baseSlug = slugify(
       hotmartProduct.name
     );
@@ -398,10 +373,6 @@ export async function importHotmartProducts(
       baseSlug ||
       `produto-hotmart-${hotmartProduct.id}`;
 
-    /*
-     * Evita conflito caso já exista outro
-     * produto usando o mesmo slug.
-     */
     const { data: slugExists } = await db
       .from("products")
       .select("id")
@@ -412,9 +383,6 @@ export async function importHotmartProducts(
       slug = `${slug}-${hotmartProduct.id}`;
     }
 
-    /*
-     * O produto entra diretamente como PUBLICADO.
-     */
     const insertData = {
       title: hotmartProduct.name,
       slug,
@@ -450,10 +418,6 @@ export async function importHotmartProducts(
       .single();
 
     if (result.error || !result.data) {
-      /*
-       * Se um produto falhar, não interrompemos
-       * toda a importação.
-       */
       console.error(
         "Erro ao importar produto Hotmart:",
         hotmartProduct.id,
@@ -476,29 +440,110 @@ export async function importHotmartProducts(
   );
 }
 
+/**
+ * Arquiva o produto.
+ * O produto continua no banco, mas deixa de aparecer
+ * no catálogo publicado.
+ */
 export async function archiveProduct(
   formData: FormData
 ) {
   await requireAdmin();
 
   const id = String(
-    formData.get("id")
-  );
+    formData.get("id") || ""
+  ).trim();
 
-  await createAdminSupabaseClient()
+  if (!id) {
+    throw new Error(
+      "ID do produto não informado."
+    );
+  }
+
+  const result = await createAdminSupabaseClient()
     .from("products")
     .update({
       status: "archived",
     })
     .eq("id", id);
 
+  if (result.error) {
+    throw new Error(
+      result.error.message ||
+        "Não foi possível arquivar o produto."
+    );
+  }
+
   revalidatePath("/admin/produtos");
+  revalidatePath(`/admin/produtos/${id}`);
   revalidatePath("/produtos");
 
-  revalidatePath("/admin/produtos");
-revalidatePath("/produtos");
+  redirect("/admin/produtos");
+}
 
-redirect("/admin/produtos");
+/**
+ * Exclui definitivamente o produto.
+ */
+export async function deleteProduct(
+  formData: FormData
+) {
+  await requireAdmin();
+
+  const id = String(
+    formData.get("id") || ""
+  ).trim();
+
+  if (!id) {
+    throw new Error(
+      "ID do produto não informado."
+    );
+  }
+
+  const db = createAdminSupabaseClient();
+
+  // Remove relações que dependem do produto.
+  await db
+    .from("product_categories")
+    .delete()
+    .eq("product_id", id);
+
+  await db
+    .from("kit_items")
+    .delete()
+    .eq("kit_product_id", id);
+
+  await db
+    .from("kit_items")
+    .delete()
+    .eq("included_product_id", id);
+
+  await db
+    .from("product_previews")
+    .delete()
+    .eq("product_id", id);
+
+  await db
+    .from("product_files")
+    .delete()
+    .eq("product_id", id);
+
+  const result = await db
+    .from("products")
+    .delete()
+    .eq("id", id);
+
+  if (result.error) {
+    throw new Error(
+      result.error.message ||
+        "Não foi possível excluir o produto."
+    );
+  }
+
+  revalidatePath("/admin/produtos");
+  revalidatePath(`/admin/produtos/${id}`);
+  revalidatePath("/produtos");
+
+  redirect("/admin/produtos");
 }
 
 export async function unarchiveProduct(
@@ -533,5 +578,4 @@ export async function unarchiveProduct(
   revalidatePath("/admin/produtos");
   revalidatePath(`/admin/produtos/${id}`);
   revalidatePath("/produtos");
-
 }

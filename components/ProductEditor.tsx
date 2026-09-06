@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AdminAssetManager } from "@/components/AdminAssetManager";
 import {
+  deleteProduct,
   saveProduct,
   syncProductWithHotmart,
 } from "@/app/admin/produtos/actions";
@@ -355,6 +356,42 @@ export function ProductEditor({
             prévias e PDF.
           </div>
         )}
+
+        {product ? (
+          <div
+            style={{
+              marginTop: 24,
+              paddingTop: 20,
+              borderTop: "1px solid var(--line)",
+            }}
+          >
+            <p
+              style={{
+                color: "var(--muted)",
+                marginBottom: 10,
+              }}
+            >
+              Zona de perigo
+            </p>
+
+            <button
+              className="button secondary"
+              type="submit"
+              formAction={deleteProduct}
+              onClick={(event) => {
+                if (
+                  !window.confirm(
+                    "Tem certeza que deseja excluir definitivamente este produto? Esta ação não pode ser desfeita."
+                  )
+                ) {
+                  event.preventDefault();
+                }
+              }}
+            >
+              Excluir produto definitivamente
+            </button>
+          </div>
+        ) : null}
       </form>
 
       {product ? (
