@@ -494,6 +494,11 @@ export async function archiveProduct(
 
   revalidatePath("/admin/produtos");
   revalidatePath("/produtos");
+
+  revalidatePath("/admin/produtos");
+revalidatePath("/produtos");
+
+redirect("/admin/produtos");
 }
 
 export async function unarchiveProduct(
@@ -528,4 +533,5 @@ export async function unarchiveProduct(
   revalidatePath("/admin/produtos");
   revalidatePath(`/admin/produtos/${id}`);
   revalidatePath("/produtos");
+
 }
