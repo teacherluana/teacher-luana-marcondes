@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { AdminAssetManager } from "@/components/AdminAssetManager";
-import { saveProduct } from "@/app/admin/produtos/actions";
+import {
+  saveProduct,
+  syncProductWithHotmart,
+} from "@/app/admin/produtos/actions";
 
 type Material = {
   id: string;
@@ -27,6 +30,10 @@ type Product = {
   grade_level: string | null;
   material_type: string | null;
   tags: string[];
+  hotmart_product_id: number | null;
+  hotmart_ucode: string | null;
+  hotmart_offer_code: string | null;
+  hotmart_checkout_url: string | null;
 };
 
 export function ProductEditor({
@@ -47,13 +54,16 @@ export function ProductEditor({
   );
 
   const [kitIds, setKitIds] = useState(initialKitIds);
+
   const [categoryIds, setCategoryIds] = useState(
     initialCategoryIds
   );
 
   const toggle = (
     id: string,
-    setter: React.Dispatch<React.SetStateAction<string[]>>
+    setter: React.Dispatch<
+      React.SetStateAction<string[]>
+    >
   ) => {
     setter((current) =>
       current.includes(id)
@@ -63,211 +73,169 @@ export function ProductEditor({
   };
 
   return (
-    <form action={saveProduct} className="panel form">
-      <input
-        name="id"
-        type="hidden"
-        value={product?.id ?? ""}
-      />
-
-      <div className="row">
-        <label style={{ flex: 1 }}>
-          Título
-          <input
-            required
-            name="title"
-            className="input"
-            defaultValue={product?.title}
-          />
-        </label>
-
-        <label style={{ flex: 1 }}>
-          Slug opcional
-          <input
-            name="slug"
-            className="input"
-            defaultValue={product?.slug}
-          />
-        </label>
-      </div>
-
-      <label>
-        Descrição
-        <textarea
-          required
-          name="description"
-          className="input"
-          style={{
-            minHeight: 120,
-            padding: 12,
-          }}
-          defaultValue={product?.description}
-        />
-      </label>
-
-      <label>
-        Resumo curto
+    <>
+      <form action={saveProduct} className="panel form">
         <input
-          name="short_description"
-          className="input"
-          defaultValue={product?.short_description ?? ""}
-        />
-      </label>
-
-      <div className="row">
-        <label style={{ flex: 1 }}>
-          Preço normal (R$)
-          <input
-            required
-            min="0"
-            step="0.01"
-            name="regular_price"
-            type="number"
-            className="input"
-            defaultValue={
-              product
-                ? product.regular_price_cents / 100
-                : ""
-            }
-          />
-        </label>
-
-        <label style={{ flex: 1 }}>
-          Preço promocional (R$)
-          <input
-            min="0"
-            step="0.01"
-            name="sale_price"
-            type="number"
-            className="input"
-            defaultValue={
-              product?.sale_price_cents
-                ? product.sale_price_cents / 100
-                : ""
-            }
-          />
-        </label>
-
-        <label>
-          Tipo
-          <select
-            name="product_kind"
-            className="input"
-            value={kind}
-            onChange={(event) =>
-              setKind(event.target.value)
-            }
-          >
-            <option value="individual">
-              Material
-            </option>
-
-            <option value="kit">
-              Kit
-            </option>
-          </select>
-        </label>
-
-        <label>
-          Status
-          <select
-            name="status"
-            className="input"
-            defaultValue={product?.status ?? "draft"}
-          >
-            <option value="draft">
-              Rascunho
-            </option>
-
-            <option value="published">
-              Publicado
-            </option>
-          </select>
-        </label>
-      </div>
-
-      <div className="row">
-        <label style={{ flex: 1 }}>
-          Faixa/ano
-          <input
-            name="grade_level"
-            className="input"
-            defaultValue={
-              product?.grade_level ?? ""
-            }
-          />
-        </label>
-
-        <label style={{ flex: 1 }}>
-          Tipo de atividade
-          <input
-            name="material_type"
-            className="input"
-            defaultValue={
-              product?.material_type ?? ""
-            }
-          />
-        </label>
-
-        <label style={{ flex: 1 }}>
-          Tags (separadas por vírgula)
-          <input
-            name="tags"
-            className="input"
-            defaultValue={
-              product?.tags?.join(", ") ?? ""
-            }
-          />
-        </label>
-      </div>
-
-      <fieldset
-        style={{
-          border: "1px solid var(--line)",
-          borderRadius: 16,
-          padding: 16,
-        }}
-      >
-        <legend>Categorias</legend>
-
-        {categories.length === 0 ? (
-          <p style={{ color: "var(--muted)" }}>
-            Nenhuma categoria ativa cadastrada.
-          </p>
-        ) : (
-          categories.map((category) => (
-            <label
-              key={category.id}
-              style={{
-                display: "inline-block",
-                padding: "6px 14px 6px 0",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={categoryIds.includes(
-                  category.id
-                )}
-                onChange={() =>
-                  toggle(
-                    category.id,
-                    setCategoryIds
-                  )
-                }
-              />{" "}
-              {category.name}
-            </label>
-          ))
-        )}
-
-        <input
+          name="id"
           type="hidden"
-          name="category_ids"
-          value={categoryIds.join(",")}
+          value={product?.id ?? ""}
         />
-      </fieldset>
 
-      {kind === "kit" ? (
+        <div className="row">
+          <label style={{ flex: 1 }}>
+            Título
+            <input
+              required
+              name="title"
+              className="input"
+              defaultValue={product?.title}
+            />
+          </label>
+
+          <label style={{ flex: 1 }}>
+            Slug opcional
+            <input
+              name="slug"
+              className="input"
+              defaultValue={product?.slug}
+            />
+          </label>
+        </div>
+
+        <label>
+          Descrição
+          <textarea
+            required
+            name="description"
+            className="input"
+            style={{
+              minHeight: 120,
+              padding: 12,
+            }}
+            defaultValue={product?.description}
+          />
+        </label>
+
+        <label>
+          Resumo curto
+          <input
+            name="short_description"
+            className="input"
+            defaultValue={
+              product?.short_description ?? ""
+            }
+          />
+        </label>
+
+        <div className="row">
+          <label style={{ flex: 1 }}>
+            Preço normal (R$)
+            <input
+              required
+              min="0"
+              step="0.01"
+              name="regular_price"
+              type="number"
+              className="input"
+              defaultValue={
+                product
+                  ? product.regular_price_cents / 100
+                  : ""
+              }
+            />
+          </label>
+
+          <label style={{ flex: 1 }}>
+            Preço promocional (R$)
+            <input
+              min="0"
+              step="0.01"
+              name="sale_price"
+              type="number"
+              className="input"
+              defaultValue={
+                product?.sale_price_cents
+                  ? product.sale_price_cents / 100
+                  : ""
+              }
+            />
+          </label>
+
+          <label>
+            Tipo
+            <select
+              name="product_kind"
+              className="input"
+              value={kind}
+              onChange={(event) =>
+                setKind(event.target.value)
+              }
+            >
+              <option value="individual">
+                Material
+              </option>
+
+              <option value="kit">
+                Kit
+              </option>
+            </select>
+          </label>
+
+          <label>
+            Status
+            <select
+              name="status"
+              className="input"
+              defaultValue={
+                product?.status ?? "draft"
+              }
+            >
+              <option value="draft">
+                Rascunho
+              </option>
+
+              <option value="published">
+                Publicado
+              </option>
+            </select>
+          </label>
+        </div>
+
+        <div className="row">
+          <label style={{ flex: 1 }}>
+            Faixa/ano
+            <input
+              name="grade_level"
+              className="input"
+              defaultValue={
+                product?.grade_level ?? ""
+              }
+            />
+          </label>
+
+          <label style={{ flex: 1 }}>
+            Tipo de atividade
+            <input
+              name="material_type"
+              className="input"
+              defaultValue={
+                product?.material_type ?? ""
+              }
+            />
+          </label>
+
+          <label style={{ flex: 1 }}>
+            Tags (separadas por vírgula)
+            <input
+              name="tags"
+              className="input"
+              defaultValue={
+                product?.tags?.join(", ") ?? ""
+              }
+            />
+          </label>
+        </div>
+
         <fieldset
           style={{
             border: "1px solid var(--line)",
@@ -275,71 +243,263 @@ export function ProductEditor({
             padding: 16,
           }}
         >
-          <legend>
-            Materiais incluídos no kit
-          </legend>
+          <legend>Categorias</legend>
 
-          {materials.length === 0 ? (
+          {categories.length === 0 ? (
             <p style={{ color: "var(--muted)" }}>
-              Nenhum outro material disponível.
+              Nenhuma categoria ativa cadastrada.
             </p>
           ) : (
-            materials
-              .filter(
-                (material) =>
-                  material.id !== product?.id
-              )
-              .map((material) => (
-                <label
-                  key={material.id}
-                  style={{
-                    display: "block",
-                    padding: "6px 0",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={kitIds.includes(
-                      material.id
-                    )}
-                    onChange={() =>
-                      toggle(
-                        material.id,
-                        setKitIds
-                      )
-                    }
-                  />{" "}
-                  {material.title}
-                </label>
-              ))
+            categories.map((category) => (
+              <label
+                key={category.id}
+                style={{
+                  display: "inline-block",
+                  padding: "6px 14px 6px 0",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={categoryIds.includes(
+                    category.id
+                  )}
+                  onChange={() =>
+                    toggle(
+                      category.id,
+                      setCategoryIds
+                    )
+                  }
+                />{" "}
+                {category.name}
+              </label>
+            ))
           )}
 
           <input
             type="hidden"
-            name="kit_items"
-            value={kitIds.join(",")}
+            name="category_ids"
+            value={categoryIds.join(",")}
           />
         </fieldset>
-      ) : null}
 
-      <button
-        className="button"
-        type="submit"
-      >
-        Salvar produto
-      </button>
+        {kind === "kit" ? (
+          <fieldset
+            style={{
+              border: "1px solid var(--line)",
+              borderRadius: 16,
+              padding: 16,
+            }}
+          >
+            <legend>
+              Materiais incluídos no kit
+            </legend>
+
+            {materials.length === 0 ? (
+              <p style={{ color: "var(--muted)" }}>
+                Nenhum outro material disponível.
+              </p>
+            ) : (
+              materials
+                .filter(
+                  (material) =>
+                    material.id !== product?.id
+                )
+                .map((material) => (
+                  <label
+                    key={material.id}
+                    style={{
+                      display: "block",
+                      padding: "6px 0",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={kitIds.includes(
+                        material.id
+                      )}
+                      onChange={() =>
+                        toggle(
+                          material.id,
+                          setKitIds
+                        )
+                      }
+                    />{" "}
+                    {material.title}
+                  </label>
+                ))
+            )}
+
+            <input
+              type="hidden"
+              name="kit_items"
+              value={kitIds.join(",")}
+            />
+          </fieldset>
+        ) : null}
+
+        <button
+          className="button"
+          type="submit"
+        >
+          Salvar produto
+        </button>
+
+        {product ? (
+          <AdminAssetManager
+            productId={product.id}
+          />
+        ) : (
+          <div className="notice">
+            Salve o produto uma primeira vez para
+            liberar o gerenciamento de capa,
+            prévias e PDF.
+          </div>
+        )}
+      </form>
 
       {product ? (
-        <AdminAssetManager
-          productId={product.id}
-        />
-      ) : (
-        <div className="notice">
-          Salve o produto uma primeira vez para
-          liberar o gerenciamento de capa,
-          prévias e PDF.
-        </div>
-      )}
-    </form>
+        <section
+          className="panel"
+          style={{
+            marginTop: 24,
+            padding: 24,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 20,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <p className="eyebrow">
+                Integração
+              </p>
+
+              <h2 style={{ marginTop: 6 }}>
+                Hotmart
+              </h2>
+
+              <p
+                style={{
+                  color: "var(--muted)",
+                  marginTop: 6,
+                }}
+              >
+                Vincule este material a um produto
+                da Hotmart para sincronizar a oferta
+                e o preço.
+              </p>
+            </div>
+          </div>
+
+          <form
+            action={syncProductWithHotmart}
+            style={{
+              marginTop: 20,
+              display: "grid",
+              gap: 16,
+            }}
+          >
+            <input
+              type="hidden"
+              name="product_id"
+              value={product.id}
+            />
+
+            <label>
+              ID do produto Hotmart
+              <input
+                required
+                min="1"
+                step="1"
+                type="number"
+                name="hotmart_product_id"
+                className="input"
+                defaultValue={
+                  product.hotmart_product_id ??
+                  ""
+                }
+                placeholder="Ex.: 5237873"
+              />
+            </label>
+
+            <button
+              className="button"
+              type="submit"
+            >
+              Sincronizar com Hotmart
+            </button>
+          </form>
+
+          {product.hotmart_product_id ? (
+            <div
+              style={{
+                marginTop: 24,
+                paddingTop: 20,
+                borderTop:
+                  "1px solid var(--line)",
+                display: "grid",
+                gap: 10,
+              }}
+            >
+              <strong>
+                Dados sincronizados
+              </strong>
+
+              <div>
+                <span
+                  style={{
+                    color: "var(--muted)",
+                  }}
+                >
+                  Produto Hotmart:
+                </span>{" "}
+                {product.hotmart_product_id}
+              </div>
+
+              <div>
+                <span
+                  style={{
+                    color: "var(--muted)",
+                  }}
+                >
+                  UCODE:
+                </span>{" "}
+                {product.hotmart_ucode ||
+                  "—"}
+              </div>
+
+              <div>
+                <span
+                  style={{
+                    color: "var(--muted)",
+                  }}
+                >
+                  Oferta:
+                </span>{" "}
+                {product.hotmart_offer_code ||
+                  "—"}
+              </div>
+
+              <div>
+                <span
+                  style={{
+                    color: "var(--muted)",
+                  }}
+                >
+                  Checkout:
+                </span>{" "}
+                {product.hotmart_checkout_url ||
+                  "Ainda não informado"}
+              </div>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+    </>
   );
 }

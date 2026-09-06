@@ -40,4 +40,22 @@ export const env = {
       "MERCADOPAGO_WEBHOOK_SECRET",
       process.env.MERCADOPAGO_WEBHOOK_SECRET
     ),
+
+  hotmartClientId: () =>
+    required(
+      "Hotmart_Client_ID",
+      process.env.Hotmart_Client_ID
+    ),
+
+  hotmartClientSecret: () =>
+    required(
+      "Hotmart_Client_Secret",
+      process.env.Hotmart_Client_Secret
+    ),
+
+  hotmartBasic: () =>
+    required(
+      "Hotmart_Basic",
+      process.env.Hotmart_Basic
+    ),
 };

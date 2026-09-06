@@ -1,7 +1,21 @@
 export type UserRole = "user" | "admin";
+
 export type ProductKind = "individual" | "kit";
-export type OrderStatus = "pending" | "approved" | "rejected" | "cancelled" | "refunded";
-export type PaymentStatus = "pending" | "approved" | "rejected" | "cancelled" | "refunded";
+
+export type OrderStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "cancelled"
+  | "refunded";
+
+export type PaymentStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "cancelled"
+  | "refunded";
+
 export type PurchaseStatus = "active" | "revoked";
 
 export type CatalogProduct = {
@@ -21,6 +35,19 @@ export type CatalogProduct = {
   categorySlug: string | null;
   tags: string[];
   isDemo: boolean;
+
+  hotmart_offer_code: string | null;
 };
 
-export type CartLine = Pick<CatalogProduct, "id" | "title" | "slug" | "coverUrl" | "regularPriceCents" | "salePriceCents" | "effectivePriceCents" | "productKind">;
+export type CartLine = Pick<
+  CatalogProduct,
+  | "id"
+  | "title"
+  | "slug"
+  | "coverUrl"
+  | "regularPriceCents"
+  | "salePriceCents"
+  | "effectivePriceCents"
+  | "productKind"
+  | "hotmart_offer_code"
+>;
