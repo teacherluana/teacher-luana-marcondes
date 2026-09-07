@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import { useCart } from "@/components/CartProvider";
-import { ProductVisual } from "@/components/ProductVisual";
+import { ProductCover } from "@/components/ProductCover";
 import type {
   CartLine,
   CatalogProduct,
@@ -38,11 +38,11 @@ export function ProductCard({
   return (
     <article className="product-card">
       <Link href={`/produtos/${product.slug}`}>
-        <ProductVisual
+        <ProductCover
           title={product.title}
-          index={index}
-          coverUrl={product.coverUrl}
-          variant="card"
+          description={product.shortDescription}
+          category={product.categoryName}
+          priceCents={product.effectivePriceCents}
         />
       </Link>
 
